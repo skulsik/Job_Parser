@@ -1,7 +1,9 @@
-from utils.utils import HH, SuperJob
+from Lib.GetVacancy import HH, SuperJob
+from Lib.Errors import Error
 import json # Убрать
 
 # HH.ru
+
 HH_ru = HH('python junior')
 hh_requests_list = HH_ru.get_request()
 
@@ -12,6 +14,7 @@ for i in hh_requests_list:
 print(j)
 
 # SuperJob
+
 SJ = SuperJob('программист')
 sj_requests_list = SJ.get_request()
 
