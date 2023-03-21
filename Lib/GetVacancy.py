@@ -1,6 +1,5 @@
-import requests
-import os
-from abc import ABC, abstractmethod
+from abc import ABC
+from Lib.Verification import *
 
 
 class Engine(ABC):
@@ -9,18 +8,13 @@ class Engine(ABC):
         message = 'class Engine'
         return message
 
-	# @staticmethod
-	# def get_connector(file_name):
-	# """ Возвращает экземпляр класса Connector """
-	# 	pass
-
 
 class HH(Engine):
     # Адрес сайта с вакансиями
     http: str = 'https://api.hh.ru/'
 
     # Количество запрошенных выкансий
-    number_of_vacancies_requested: int = 1_000
+    number_of_vacancies_requested: int = 500
 
     # Количество вакансий, читаемых за один запрос <=100
     number_of_vacancies_at_once: int = 100
@@ -53,12 +47,14 @@ class HH(Engine):
         данному запросу профессии
         :return: Список вакансий по введеному названию профессии
         """
+        # Проверка адреса на работаспособность
+        RequestVerification(self.http)
+
         # Временный словарь для хранения запроса(словаря вакансий)
         requests_job: dict = requests.get(f'{self.http}vacancies?{self.text}&&{self.per_page}&&page={self.page}').json()
 
         # Проверка кол-ва страниц из запроса и обычная проверка страниц из заданных настроек
         if self.page < requests_job["pages"] and self.page < self.pages:
-
             # Добавление в список, списка вакансий с данной страницы
             self.__requests_job_list += requests_job['items']
 
@@ -107,11 +103,10 @@ class SuperJob(Engine):
         :return: Список вакансий по введеному названию профессии
         """
         # Получает ключ, из переменных окружения Windows
-        name_key: str = self.name_of_the_environment_variable
-        if os.getenv(name_key):
-            api_key: str = os.getenv(name_key)
-        else:
-            raise ValueError('В переменных окружения Windows отсутствует ключ api youtube.')
+        api_key = str(APIKeyVerification(self.name_of_the_environment_variable))
+
+        # Проверка адреса на работаспособность
+        RequestVerification(self.http, api_key)
 
         # Временный словарь для хранения запроса(словаря вакансий)
         requests_job: dict = requests.get(f'{self.http}',
@@ -133,8 +128,3 @@ class SuperJob(Engine):
             self.get_request()
 
         return self.__requests_job_list
-
-
-# class Vacancy:
-#     """Работа с данными"""
-#     pass
