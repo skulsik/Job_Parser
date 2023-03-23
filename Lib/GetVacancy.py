@@ -9,6 +9,11 @@ class Engine(ABC):
         return message
 
 
+    def adding_job_listings(job_list: list = []) -> list:
+        """ Суммирование разных списков вакансий"""
+        return sum(job_list, start=[])
+
+
 class HH(Engine):
     # Адрес сайта с вакансиями
     http: str = 'https://api.hh.ru/'
@@ -64,6 +69,12 @@ class HH(Engine):
             # Запуск рекурсии
             self.get_request()
 
+
+    @property
+    def get_job_list(self) -> list:
+        """
+        :return: Список вакансий HH.ru
+        """
         return self.__requests_job_list
 
 
@@ -112,7 +123,6 @@ class SuperJob(Engine):
         requests_job: dict = requests.get(f'{self.http}',
                                           headers={"X-Api-App-Id": api_key},
                                           params={'keyword': self.keyword,
-                                                  'catalogues': [33],
                                                   'count': self.number_of_vacancies_at_once,
                                                   'page': self.page}).json()
 
@@ -127,4 +137,38 @@ class SuperJob(Engine):
             # Запуск рекурсии
             self.get_request()
 
+
+    @property
+    def get_job_list(self) -> list:
+        """
+        :return: Список вакансий SuperJob
+        """
         return self.__requests_job_list
+
+
+class JobAssembly:
+    def __init__(self, job_name: str = ''):
+        """ Сборка классов разных сайтов в один. Формирование одного списка вакансий."""
+        # Общий список вакансий с двух сайтов
+        self.__all_requests_list: list = []
+
+        # Берем вакансии с HH.ru
+        HH_ru = HH(job_name)
+        HH_ru.get_request()
+        hh_requests_list = HH_ru.get_job_list
+
+        # Берем вакансии с SuperJob
+        SJ = SuperJob(job_name)
+        SJ.get_request()
+        sj_requests_list = SJ.get_job_list
+
+        # Объединение списков вакансий в единый
+        self.__all_requests_list = Engine.adding_job_listings([hh_requests_list, sj_requests_list])
+
+
+    @property
+    def get_all_requests_list(self):
+        """
+        :return: Список вакансий с сайтов
+        """
+        return self.__all_requests_list

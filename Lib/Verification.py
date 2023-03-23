@@ -1,5 +1,6 @@
 import os
 import requests
+import datetime
 from Lib.Errors import *
 
 
@@ -42,3 +43,55 @@ class APIKeyVerification:
 
     def __str__(self) -> object:
         return self.api_key
+
+
+class ListVerification:
+    def __init__(self, list_v: list):
+        """ Проверка на содержимое списка """
+        try:
+            if list_v is None:
+                raise ListError('ListError: На запись передан пустой список')
+        except ListError:
+            exit()
+
+
+class FileDateVerification:
+    def __init__(self):
+        """
+        Проверяет фаил на существование, если существует проверяет время существования.
+        При запуске программы если фаил существует более 23:59, флаг self.file_date становится True,
+        что приводит к обновлению фаила.
+        """
+        # Флаг, True запуск чтения вакансий с сайтов
+        self.file_date: bool = False
+
+        # Разница времён
+        time_: object = None
+
+        # Максимальное время в течении которого не будет обновляться база с вакансиями 23:59:59
+        time_max: object = datetime.timedelta(0, 59, 0, 0, 59, 23)
+
+        # Путь к файлу
+        path: str = 'data/job.json'
+
+        if os.path.exists(path):
+            # Получает время создания фаила
+            time_file: object = os.path.getmtime(path)
+
+            # Преобразует к комфортному формату
+            time_file = datetime.datetime.fromtimestamp(time_file)
+
+            # Читает современное время
+            time_now: object = datetime.datetime.now()
+
+            # Разница времён
+            time_ = time_now - time_file
+
+            if time_max < time_:
+                self.file_date = True
+        else:
+            self.file_date = True
+
+    @property
+    def get_file_date(self):
+        return self.file_date
