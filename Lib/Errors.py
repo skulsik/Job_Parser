@@ -50,3 +50,14 @@ class NameKeyError(Error):
         self.message: str = args[0] if args else 'NameKeyError: Неизвестная ошибка.'
         Error.NotError: str = self.message
         print(self.message)
+
+
+class ListError(Error):
+    """
+    Ошибка переданного имени
+    Возвращает переданную ошибку, либо предопределенную
+    """
+    def __init__(self, *args, **kwargs):
+        self.message: str = args[0] if args else 'NameKeyError: Неизвестная ошибка.'
+        Error.NotError: str = self.message
+        print(self.message)
