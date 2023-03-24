@@ -122,7 +122,7 @@ class SuperJob(Engine):
         # Временный словарь для хранения запроса(словаря вакансий)
         requests_job: dict = requests.get(f'{self.http}',
                                           headers={"X-Api-App-Id": api_key},
-                                          params={'keyword': self.keyword,
+                                          params={'keywords': self.keyword,
                                                   'count': self.number_of_vacancies_at_once,
                                                   'page': self.page}).json()
 

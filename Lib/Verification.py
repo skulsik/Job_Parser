@@ -95,3 +95,45 @@ class FileDateVerification:
     @property
     def get_file_date(self):
         return self.file_date
+
+
+class KeyInDictVerification:
+    def __init__(self, item_dict: dict = {}, job_site: str = ''):
+        snippet_f: bool = False
+        pay_f: bool = False
+        url_f: bool = False
+        experience_f: bool = False
+
+        # Если проверяем HH.ru
+        if job_site == 'HH':
+            if 'snippet' in item_dict and 'requirement' in item_dict['snippet'] and item_dict['snippet']['requirement']:
+                snippet_f = True
+            if 'salary' in item_dict and 'from' in item_dict['salary'] and item_dict['salary']['from']:
+                pay_f = True
+            if 'salary' in item_dict and 'to' in item_dict['salary'] and item_dict['salary']['to']:
+                pay_f = True
+            if 'alternate_url' in item_dict and item_dict['alternate_url']:
+                url_f = True
+
+        # Если проверяем SuperJob
+        if job_site == 'SuperJob':
+            if 'candidat' in item_dict and item_dict['candidat']:
+                snippet_f = True
+            if 'payment_from' in item_dict and item_dict['payment_from']:
+                pay_f = True
+            if 'payment_to' in item_dict and item_dict['payment_to']:
+                pay_f = True
+            if 'link' in item_dict and item_dict['link']:
+                url_f = True
+
+        self.key_bool_dict = {'snippet': snippet_f,
+                              'pay': pay_f,
+                              'url': url_f}
+
+
+    @property
+    def get_key_in_dict_verification(self) -> dict:
+        """
+        :return: словарь key=bool. True - ключ имеет данные
+        """
+        return self.key_bool_dict

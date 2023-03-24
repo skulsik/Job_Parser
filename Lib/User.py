@@ -14,17 +14,18 @@ class User:
     def read_user_info(self):
         """ Чтение имени и вакансии """
         with open(self.path, mode='r', encoding='UTF-8') as file:
-            info: str = file.readline()
-        info_list: list = info.split(':')
-        self.name = info_list[0]
-        self.job = info_list[1]
-
+            for info in file:
+                info_list: list = info.split('=')
+                if 'name' == info_list[0]:
+                    self.name = info_list[1].strip()
+                if 'job' == info_list[0]:
+                    self.job = info_list[1].strip()
 
 
     def write_user_info(self, name: str, job: str = ''):
         """ Запись имени пользователя и вакансии в фаил """
         with open(self.path, mode='w', encoding='UTF-8') as file:
-            file.write(f'{name}:{job}')
+            file.write(f'name={name}\njob={job}')
 
 
     @property
