@@ -58,3 +58,27 @@ class Test_NameKeyError(unittest.TestCase):
         """ Проверка метода с данными """
         NameKeyError('error')
         self.assertEqual(NameKeyError.NotError, 'error')
+
+
+class Test_ListError(unittest.TestCase):
+    def test_ListError_not_message(self):
+        """ Проверка метода без данных """
+        ListError()
+        self.assertEqual(ListError.NotError, 'ListError: Неизвестная ошибка.')
+
+    def test_ListError_message(self):
+        """ Проверка метода с данными """
+        ListError('error')
+        self.assertEqual(ListError.NotError, 'error')
+
+
+class Test_JsonError(unittest.TestCase):
+    def test_ListError_not_message(self):
+        """ Проверка метода без данных """
+        JsonError()
+        self.assertEqual(JsonError.NotError, 'JsonError: Неизвестная ошибка.')
+
+    def test_ListError_message(self):
+        """ Проверка метода с данными """
+        JsonError('error')
+        self.assertEqual(JsonError.NotError, 'error')

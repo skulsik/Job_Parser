@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 class Error(Exception):
     """ Глобальная переменная для отлова ошибок """
-    NotError: str = None
+    NotError: str = ''
 
 
 class RequestError(Error):
@@ -58,6 +58,17 @@ class ListError(Error):
     Возвращает переданную ошибку, либо предопределенную
     """
     def __init__(self, *args, **kwargs):
-        self.message: str = args[0] if args else 'NameKeyError: Неизвестная ошибка.'
+        self.message: str = args[0] if args else 'ListError: Неизвестная ошибка.'
+        Error.NotError: str = self.message
+        print(self.message)
+
+
+class JsonError(Error):
+    """
+    Ошибка переданного имени
+    Возвращает переданную ошибку, либо предопределенную
+    """
+    def __init__(self, *args, **kwargs):
+        self.message: str = args[0] if args else 'JsonError: Неизвестная ошибка.'
         Error.NotError: str = self.message
         print(self.message)

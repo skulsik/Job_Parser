@@ -37,3 +37,11 @@ class Test_SuperJob(unittest.TestCase):
         sj.get_request()
         hh_requests_list = sj.get_job_list
         self.assertEqual(hh_requests_list[0]['profession'], 'Маркетолог аналитик junior')
+
+
+class Test_JobAssembly(unittest.TestCase):
+    def test_get_request(self):
+        """ Проверка метода """
+        JA: object = JobAssembly('python')
+        all_requests_list: list = JA.get_all_requests_list
+        self.assertEqual(all_requests_list[0]['name'], 'Разработчик Python')
