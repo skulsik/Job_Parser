@@ -5,8 +5,7 @@ from Lib.Verification import *
 class Engine(ABC):
     @abstractmethod
     def get_request():
-        message = 'class Engine'
-        return message
+        return 'class Engine'
 
 
     def adding_job_listings(job_list: list = []) -> list:
@@ -44,7 +43,7 @@ class HH(Engine):
         self.page: int = 0
 
 
-    def get_request(self) -> list:
+    def get_request(self):
         """
         Метод чтения вакансий и заполнения списка полученными вакансиями
         Количство запрошенных профессий может отличаться от количества существующих, в связи с этим выполнена

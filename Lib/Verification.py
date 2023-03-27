@@ -1,17 +1,18 @@
 import os
 import requests
 import datetime
+import json
 from Lib.Errors import *
 
 
 class RequestVerification:
-    def __init__(self, http: str = None, key: str = None):
+    def __init__(self, http: str = '', key: str = ''):
         """
         Проверка адреса на существование или работоспособность
         Запрос адреса может быть выполнен как с ключем API, так и без него
         """
         try:
-            if http is None or 'http' not in http:
+            if http == '' or 'http' not in http:
                 raise HTTPError('HTTPError: Не передан адрес, либо передан некорректно.')
 
             # Запрос
@@ -25,11 +26,11 @@ class RequestVerification:
 
 
 class APIKeyVerification:
-    def __init__(self, name_key: str = None):
+    def __init__(self, name_key: str = ''):
         """ Проверка наличия ключа (имени) в переменных окружения Windows """
         self.api_key: str = ''
         try:
-            if name_key is None:
+            if name_key == '':
                 raise NameKeyError('NameKeyError: Имя ключа не передано.')
             if os.getenv(name_key):
                 self.api_key = os.getenv(name_key)
@@ -41,7 +42,10 @@ class APIKeyVerification:
             exit()
 
 
-    def __str__(self) -> object:
+    def __str__(self) -> str:
+        """
+        :return: Ключ API из переменных окружения
+        """
         return self.api_key
 
 
@@ -49,13 +53,27 @@ class ListVerification:
     def __init__(self, list_v: list):
         """ Проверка на содержимое списка """
         try:
-            if list_v is None:
-                raise ListError('ListError: На запись передан пустой список')
-        except ListError:
+            list_v
+        except ValueError as e:
+            ListError('ListError: На запись передан пустой список')
+            exit()
+
+
+class JsonVerification:
+    def __init__(self, json_list: list = []):
+        """ Проверка на содержимое списка """
+        try:
+            json.loads(json_list)
+        except ValueError as e:
+            JsonError('JsonError: Ошибка чтения json файла.')
             exit()
 
 
 class FileDateVerification:
+    # Путь к файлу
+    path: str = 'data/job.json'
+
+
     def __init__(self):
         """
         Проверяет фаил на существование, если существует проверяет время существования.
@@ -71,12 +89,9 @@ class FileDateVerification:
         # Максимальное время в течении которого не будет обновляться база с вакансиями 23:59:59
         time_max: object = datetime.timedelta(0, 59, 0, 0, 59, 23)
 
-        # Путь к файлу
-        path: str = 'data/job.json'
-
-        if os.path.exists(path):
+        if os.path.exists(self.path):
             # Получает время создания фаила
-            time_file: object = os.path.getmtime(path)
+            time_file: object = os.path.getmtime(self.path)
 
             # Преобразует к комфортному формату
             time_file = datetime.datetime.fromtimestamp(time_file)
@@ -94,41 +109,93 @@ class FileDateVerification:
 
     @property
     def get_file_date(self):
+        """
+        :return: True - обновить фаил
+        """
         return self.file_date
 
 
 class KeyInDictVerification:
     def __init__(self, item_dict: dict = {}, job_site: str = ''):
+        """ Проверка ключей в словарях взятых с разных сайтов вакансий"""
+        # Описание вакансии
         snippet_f: bool = False
-        pay_f: bool = False
+        # Зарплата от
+        pay_f_from: bool = False
+        # Зарплата до
+        pay_f_to: bool = False
+        # Ссылка на вакансию
         url_f: bool = False
+        # Требуемый опыт
         experience_f: bool = False
+        # Индификатор вакансии
+        id_f: bool = False
 
-        # Если проверяем HH.ru
+        # Проверяем ключи HH.ru
         if job_site == 'HH':
-            if 'snippet' in item_dict and 'requirement' in item_dict['snippet'] and item_dict['snippet']['requirement']:
-                snippet_f = True
-            if 'salary' in item_dict and 'from' in item_dict['salary'] and item_dict['salary']['from']:
-                pay_f = True
-            if 'salary' in item_dict and 'to' in item_dict['salary'] and item_dict['salary']['to']:
-                pay_f = True
+            # Проверка ключа (описание вакансии)
+            if 'snippet' in item_dict and item_dict['snippet']:
+                if 'requirement' in item_dict['snippet'] and item_dict['snippet']['requirement']:
+                    snippet_f = True
+
+            # Проверка ключей (зп)
+            if 'salary' in item_dict and item_dict['salary']:
+                # Проверка ключа (зп от)
+                if 'from' in item_dict['salary'] and item_dict['salary']['from']:
+                    pay_f_from = True
+
+                # Проверка ключа (зп до)
+                if 'to' in item_dict['salary'] and item_dict['salary']['to']:
+                    pay_f_to = True
+
+            # Проверка ключа (ссылка на вакансию)
             if 'alternate_url' in item_dict and item_dict['alternate_url']:
                 url_f = True
 
-        # Если проверяем SuperJob
+        # Проверяем ключи SuperJob
         if job_site == 'SuperJob':
+            # Проверка ключа (описание вакансии)
             if 'candidat' in item_dict and item_dict['candidat']:
                 snippet_f = True
+
+            # Проверка ключа (зп от)
             if 'payment_from' in item_dict and item_dict['payment_from']:
-                pay_f = True
+                pay_f_from = True
+
+            # Проверка ключа (зп до)
             if 'payment_to' in item_dict and item_dict['payment_to']:
-                pay_f = True
+                pay_f_to = True
+
+            # Проверка ключа (ссылка на вакансию)
             if 'link' in item_dict and item_dict['link']:
                 url_f = True
 
-        self.key_bool_dict = {'snippet': snippet_f,
-                              'pay': pay_f,
-                              'url': url_f}
+            # Проверка ключа (требуемый опыт)
+            if 'experience' in item_dict and item_dict['experience']:
+                if 'id' in item_dict['experience'] and item_dict['experience']['id']:
+                    experience_f = True
+
+        # Проверка ключа (Индификатор вакансии)
+        if 'id' in item_dict and item_dict['id']:
+            id_f = True
+
+        # Заполняем словарь ключ -> значение(bool)
+        self.key_bool_dict: dict = {'snippet': snippet_f,
+                                    'pay_from': pay_f_from,
+                                    'pay_to': pay_f_to,
+                                    'url': url_f,
+                                    'experience': experience_f,
+                                    'id': id_f}
+
+
+    @property
+    def pay_key_in_dict_verification(self) -> bool:
+        """
+        :return: Если зп есть в одном из ключей, вернет True
+        """
+        if self.key_bool_dict['pay_from'] or self.key_bool_dict['pay_to']:
+            return True
+        return False
 
 
     @property
