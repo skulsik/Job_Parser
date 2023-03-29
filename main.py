@@ -11,6 +11,7 @@ user_obj: object = User()
 # Проверка существования файла, если существует - проверка на свежесть 24часа
 file_date: object = FileDateVerification()
 
+# Переменные
 user_name: str = ''
 job_name: str = ''
 
