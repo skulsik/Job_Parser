@@ -12,8 +12,10 @@ class JobProcessing:
         """ Инициализация свойств """
         # Список вакансий
         self.job_list: list = []
-        # Список вакансий для вывода пользователю
-        self.print_job_list: list = []
+        # Голова стэка вакансий
+        self.head_stack_vacancy: object = None
+        # Хвост стэка вакансий
+        self.tail_stack_vacancy: object = None
 
 
     def recording_job_in_the_file(self, job_list: list = []):
@@ -81,11 +83,20 @@ class JobProcessing:
                     # Убирает ненужные теги
                     requirement: str = JobProcessing.removing_characters_from_a_string(item['snippet']['requirement'])
                     hh += 1
-                    self.print_job_list += [{'name': item['name'],
+                    # Формирование вакансии
+                    job_dict: dict = {'name': item['name'],
                                              'requirement': requirement,
                                              'from': item['salary']['from'],
                                              'to': item['salary']['to'],
-                                             'url': item['alternate_url']}]
+                                             'url': item['alternate_url']}
+                    # Создает стэк с вакансиями, ячейка - экземпляр с вакансией
+                    vacancy = Vacancy(job_dict)
+                    if self.head_stack_vacancy:
+                        self.tail_stack_vacancy.next_job = vacancy
+                    else:
+                        self.head_stack_vacancy = vacancy
+                    self.tail_stack_vacancy = vacancy
+
 
             # Берет из SuperJob
             if 'profession' in item and sj < number_of_vacancies:
@@ -96,11 +107,19 @@ class JobProcessing:
 
                 if KIDV.pay_key_in_dict_verification and key_bool_dict['snippet'] and key_bool_dict['url']:
                     sj += 1
-                    self.print_job_list += [{'name': item['profession'],
+                    # Формирование вакансии
+                    job_dict: dict = {'name': item['profession'],
                                              'requirement': item['candidat'],
                                              'from': item['payment_from'],
                                              'to': item['payment_to'],
-                                             'url': item['link']}]
+                                             'url': item['link']}
+                    # Создает стэк с вакансиями, ячейка - экземпляр с вакансией
+                    vacancy = Vacancy(job_dict)
+                    if self.head_stack_vacancy:
+                        self.tail_stack_vacancy.next_job = vacancy
+                    else:
+                        self.head_stack_vacancy = vacancy
+                    self.tail_stack_vacancy = vacancy
 
 
     def search_for_job_not_experience(self, number_of_vacancies: int = 10):
@@ -119,11 +138,19 @@ class JobProcessing:
                     # 1 без опыта
                     if item['experience']['id'] == 1:
                         sj += 1
-                        self.print_job_list += [{'name': item['profession'],
-                                                 'requirement': item['candidat'],
-                                                 'from': item['payment_from'],
-                                                 'to': item['payment_to'],
-                                                 'url': item['link']}]
+                        # Формирование вакансии
+                        job_dict: dict = {'name': item['profession'],
+                                          'requirement': item['candidat'],
+                                          'from': item['payment_from'],
+                                          'to': item['payment_to'],
+                                          'url': item['link']}
+                        # Создает стэк с вакансиями, ячейка - экземпляр с вакансией
+                        vacancy = Vacancy(job_dict)
+                        if self.head_stack_vacancy:
+                            self.tail_stack_vacancy.next_job = vacancy
+                        else:
+                            self.head_stack_vacancy = vacancy
+                        self.tail_stack_vacancy = vacancy
 
 
     def search_for_job_top(self, number_of_vacancies: int = 10):
@@ -163,39 +190,69 @@ class JobProcessing:
                     if pay_list_sorted[pay_inc]['id'] == item['id']:
                         # Убирает ненужные теги
                         requirement: str = JobProcessing.removing_characters_from_a_string(item['snippet']['requirement'])
-                        self.print_job_list += [{'name': item['name'],
-                                                 'requirement': requirement,
-                                                 'from': item['salary']['from'],
-                                                 'to': item['salary']['to'],
-                                                 'url': item['alternate_url']}]
+                        # Формирование вакансии
+                        job_dict: dict = {'name': item['name'],
+                                          'requirement': requirement,
+                                          'from': item['salary']['from'],
+                                          'to': item['salary']['to'],
+                                          'url': item['alternate_url']}
+                        # Создает стэк с вакансиями, ячейка - экземпляр с вакансией
+                        vacancy = Vacancy(job_dict)
+                        if self.head_stack_vacancy:
+                            self.tail_stack_vacancy.next_job = vacancy
+                        else:
+                            self.head_stack_vacancy = vacancy
+                        self.tail_stack_vacancy = vacancy
 
                 # Берет из SuperJob
                 if 'profession' in item:
                     if pay_list_sorted[pay_inc]['id'] == item['id']:
-                        self.print_job_list += [{'name': item['profession'],
-                                                 'requirement': item['candidat'],
-                                                 'from': item['payment_from'],
-                                                 'to': item['payment_to'],
-                                                 'url': item['link']}]
+                        # Формирование вакансии
+                        job_dict: dict = {'name': item['profession'],
+                                          'requirement': item['candidat'],
+                                          'from': item['payment_from'],
+                                          'to': item['payment_to'],
+                                          'url': item['link']}
+                        # Создает стэк с вакансиями, ячейка - экземпляр с вакансией
+                        vacancy = Vacancy(job_dict)
+                        if self.head_stack_vacancy:
+                            self.tail_stack_vacancy.next_job = vacancy
+                        else:
+                            self.head_stack_vacancy = vacancy
+                        self.tail_stack_vacancy = vacancy
             pay_inc += 1
 
 
     @property
     def print_job(self):
-        """ Вывод списка вакансий на экран"""
+        """ Вывод стэка вакансий на экран"""
+        vacancy: object = self.head_stack_vacancy
         print('\n')
-        for item in self.print_job_list:
+        if vacancy is None:
+            print("Отсуствуют экземпляры Vacancy.")
+        while vacancy:
             print('****************************************************************************************************')
-            print(f"Название вакансии: {item['name']}")
-            print(f"Требования к кандидату: {item['requirement']}")
+            print(f"Название вакансии: {vacancy.job['name']}")
+            print(f"Требования к кандидату: {vacancy.job['requirement']}")
             pay: str = ''
-            if item['from']:
-                pay = str(item['from'])
-            if item['to']:
-                pay = pay + f" - {item['to']}"
+            if vacancy.job['from']:
+                pay = str(vacancy.job['from'])
+            if vacancy.job['to']:
+                pay = pay + f" - {vacancy.job['to']}"
             if pay == '':
                 pay: str = "зарплата не указана"
             print(f"Зарплата: {pay}")
-            print(f"Ссылка на вакансию: {item['url']}")
+            print(f"Ссылка на вакансию: {vacancy.job['url']}")
+            # Переход к следующему экземпляру
+            vacancy = vacancy.next_job
 
-        print('****************************************************************************************************')
+
+class Vacancy:
+    def __init__(self, job: dict = {}, next_job: object = None):
+        """
+        Узел стыка ячеек в стэке
+        :param data: вакансия
+        :param next: контейнер для следующего экземпляра
+        """
+        self.job = job
+        self.next_job = next_job
