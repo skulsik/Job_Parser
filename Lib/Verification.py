@@ -61,7 +61,7 @@ class ListVerification:
 
 class JsonVerification:
     def __init__(self, json_list: list = []):
-        """ Проверка на содержимое списка """
+        """ Проверяет соответствует ли словарь, json формату """
         try:
             json.loads(json_list)
         except ValueError as e:
